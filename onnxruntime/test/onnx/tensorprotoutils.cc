@@ -758,10 +758,6 @@ Status MLValueToTensorProto(Ort::Value& value, onnx::TensorProto& tensor_proto) 
     tensor_proto.add_dims(out_shape[j]);
   }
   size_t tensor_size = tensor_info.GetElementCount();
-  if (static_cast<uint64_t>(tensor_size) > SIZE_MAX) {
-    return Status(common::ONNXRUNTIME, common::INVALID_ARGUMENT, "Size overflow");
-  }
-
   ONNXTensorElementDataType tensor_elem_data_type = tensor_info.GetElementType();
   int tensor_elem_bytes;
   int tensor_proto_dtype;

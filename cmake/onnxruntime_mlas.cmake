@@ -398,7 +398,7 @@ else()
         #arm64v8/ubuntu -> aarch64
         #Android: armv7-a aarch64 i686 x86_64
         #chasun: I don't think anyone uses 'arm64'
-        if(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm64.*")
+        if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|armv8|aarch64).*")
           set(ARM64 TRUE)
         elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm.*")
           set(ARM TRUE)
@@ -900,7 +900,7 @@ block()
 endblock()
 
 
-if (NOT onnxruntime_ORT_MINIMAL_BUILD)
+if (NOT onnxruntime_ORT_MINIMAL_BUILD AND NOT CMAKE_CROSSCOMPILING)
 
   #
   # Command line tool for quantization and de-quantization of 2-D fp32 tensors

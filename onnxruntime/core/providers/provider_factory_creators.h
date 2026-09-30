@@ -22,6 +22,10 @@
 #include "core/providers/armnn/armnn_provider_factory_creator.h"
 #endif
 
+#if defined(USE_AMLOGIC)
+#include "core/providers/amlogic/amlogic_provider_factory_creator.h"
+#endif
+
 #if defined(USE_COREML)
 #include "core/providers/coreml/coreml_provider_factory_creator.h"
 #endif

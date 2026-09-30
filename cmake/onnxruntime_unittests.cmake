@@ -650,6 +650,10 @@ if(onnxruntime_USE_JSEP)
   list(APPEND onnxruntime_test_providers_dependencies onnxruntime_providers_js)
 endif()
 
+if(onnxruntime_USE_AMLOGIC)
+  list(APPEND onnxruntime_test_providers_dependencies onnxruntime_providers_amlogic)
+endif()
+
 if(onnxruntime_USE_RKNPU)
   list(APPEND onnxruntime_test_providers_dependencies onnxruntime_providers_rknpu)
 endif()
@@ -686,6 +690,7 @@ set(ONNXRUNTIME_TEST_STATIC_PROVIDER_LIBS
     ${PROVIDERS_JS}
     ${PROVIDERS_SNPE}
     ${PROVIDERS_RKNPU}
+    ${PROVIDERS_AMLOGIC}
     ${PROVIDERS_DML}
     ${PROVIDERS_ACL}
     ${PROVIDERS_ARMNN}

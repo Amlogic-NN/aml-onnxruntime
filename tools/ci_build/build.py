@@ -813,8 +813,6 @@ def generate_build_tree(
     if args.android:
         if not args.android_ndk_path:
             raise BuildError("android_ndk_path required to build for Android")
-        if not args.android_sdk_path:
-            raise BuildError("android_sdk_path required to build for Android")
         android_toolchain_cmake_path = os.path.join(args.android_ndk_path, "build", "cmake", "android.toolchain.cmake")
         cmake_args += [
             "-DANDROID_PLATFORM=android-" + str(args.android_api),
@@ -1379,7 +1377,8 @@ def build_targets(args, cmake_path, build_dir, configs, num_parallel_jobs, targe
 
         env = {}
         if args.android:
-            env["ANDROID_SDK_ROOT"] = args.android_sdk_path
+            if args.android_sdk_path:
+                env["ANDROID_SDK_ROOT"] = args.android_sdk_path
             env["ANDROID_NDK_HOME"] = args.android_ndk_path
 
         run_subprocess(cmd_args, env=env)

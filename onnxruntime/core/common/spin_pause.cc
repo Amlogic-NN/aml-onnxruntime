@@ -29,7 +29,9 @@ void SpinPause() {
     !defined(__APPLE__)
 
   static const bool has_tpause = CPUIDInfo::GetCPUIDInfo().HasTPAUSE();
+#if defined(_WIN32) || defined(__WAITPKG__)
   static constexpr uint64_t tpause_spin_delay_cycles = 1000;
+#endif
   if (has_tpause) {
 #if defined(_WIN32) || defined(__WAITPKG__)
     _tpause(0x0, __rdtsc() + tpause_spin_delay_cycles);

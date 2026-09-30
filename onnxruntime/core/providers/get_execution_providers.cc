@@ -85,6 +85,14 @@ constexpr ProviderInfo kProvidersInPriorityOrder[] =
 #endif
         },
         {
+            kAmlogicExecutionProvider,
+#ifdef USE_AMLOGIC
+            true,
+#else
+            false,
+#endif
+        },
+        {
             kNnapiExecutionProvider,
 #ifdef USE_NNAPI
             true,

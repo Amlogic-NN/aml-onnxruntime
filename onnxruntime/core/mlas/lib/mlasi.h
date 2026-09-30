@@ -37,6 +37,7 @@ Abstract:
 
 #include "core/mlas/inc/mlas.h"
 
+
 #if defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -49,6 +50,13 @@ Abstract:
 #else
 #if defined(__arm__) || defined(__aarch64__)
 #include <arm_neon.h>
+#if defined(__aarch64__) && defined(__linux__) && !defined(__ARM_FEATURE_BF16) && !defined(_AARCH64_BF16_H_)
+// Android NDK r25c does not expose bfloat16_t unless BF16 target features
+// are enabled, while this MLAS interface still uses the storage type. Some
+// GCC toolchains include arm_bf16.h from arm_neon.h without enabling the
+// target feature; _AARCH64_BF16_H_ prevents a duplicate typedef there.
+typedef unsigned short bfloat16_t;
+#endif
 #endif
 #if defined(__x86_64__) || defined(__i386__)
 #if !defined(signature_VORTEX_ebx) && !defined(signature_NEXGEN_ebx) && !defined(signature_AMD_ebx)//workaround for Bug 96238 - [i386] cpuid.h header needs include guards
