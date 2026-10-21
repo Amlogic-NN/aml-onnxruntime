@@ -773,6 +773,9 @@ def add_execution_provider_args(parser: argparse.ArgumentParser) -> None:
     rknpu_group = parser.add_argument_group("RKNPU Execution Provider")
     rknpu_group.add_argument("--use_rknpu", action="store_true", help="Enable RKNPU EP.")
 
+    amlogic_group = parser.add_argument_group("Amlogic Execution Provider")
+    amlogic_group.add_argument("--use_amlogic", action="store_true", help="Enable the Amlogic EP (AMLNN runtime).")
+
     # --- CANN (Huawei Ascend) ---
     cann_group = parser.add_argument_group("CANN Execution Provider")
     cann_group.add_argument("--use_cann", action="store_true", help="Enable CANN EP.")

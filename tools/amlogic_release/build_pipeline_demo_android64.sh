@@ -4,9 +4,10 @@ set -euo pipefail
 : "${ANDROID_NDK_PATH:?ANDROID_NDK_PATH must be set}"
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+RELEASE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 CXX="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang++"
-ORT_BUILD_DIR="${REPO_ROOT}/build/AMLOGIC_AMLNN_PIPELINE-android64/Release"
-OUTPUT_DIR="${REPO_ROOT}/tools/amlogic_amlnn_pipeline/pipeline_demo/bin/android64"
+ORT_BUILD_DIR="${REPO_ROOT}/build/AMLOGIC_PIPELINE-android64/Release"
+OUTPUT_DIR="${RELEASE_DIR}/pipeline_demo/bin/android64"
 
 [[ -x "${CXX}" ]] || { echo "Compiler not found: ${CXX}" >&2; exit 1; }
 [[ -f "${ORT_BUILD_DIR}/libonnxruntime.so" ]] || {
@@ -24,7 +25,7 @@ mkdir -p "${OUTPUT_DIR}"
   -stdlib=libc++ \
   -I"${REPO_ROOT}/include/onnxruntime" \
   -I"${REPO_ROOT}/include/onnxruntime/core/session" \
-  "${REPO_ROOT}/tools/amlogic_amlnn_pipeline/pipeline_demo/pipeline_demo.cc" \
+  "${RELEASE_DIR}/pipeline_demo/pipeline_demo.cc" \
   -L"${ORT_BUILD_DIR}" \
   -lonnxruntime \
   -lc++_shared \

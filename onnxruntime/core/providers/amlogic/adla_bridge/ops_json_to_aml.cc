@@ -1152,6 +1152,55 @@ bool BuildAmlModelFromOpsJson(const std::string& text, const std::string& target
           continue;
         }
       }
+
+      // Some reference-style Slice records omit an explicit strides input.
+      // A reverse slice is still identifiable from begin + size exceeding the
+      // source dimension (for example begin=255, size=128 on a dimension of
+      // 256).  The legacy serialized path lowered this semantic internally;
+      // the public Context API needs an explicit StridedSlice graph instead.
+      if (op_name == "Slice") {
+        const auto data_it = detail.find("input_tensor_info_1");
+        const auto begin_it = detail.find("input_tensor_info_2");
+        const auto size_it = detail.find("input_tensor_info_3");
+        const auto output_it = detail.find("output_tensor_info");
+        if (data_it != detail.end() && begin_it != detail.end() &&
+            size_it != detail.end() && output_it != detail.end()) {
+          AML_Tensor data = ParseTensor(*data_it, 0);
+          if (!data.is_const) {
+            const auto producer = known.find(data.name);
+            if (producer != known.end()) data = producer->second;
+          }
+          AML_Tensor begin = ParseTensor(*begin_it, 1);
+          AML_Tensor size = ParseTensor(*size_it, 2);
+          AML_Tensor output = ParseTensor(*output_it, 3);
+          const size_t input_rank = data.dims.size();
+          if (begin.is_const && size.is_const && begin.dims == size.dims &&
+              begin.data.size() == input_rank * sizeof(int) &&
+              size.data.size() == input_rank * sizeof(int)) {
+            const auto* begin_values = reinterpret_cast<const int*>(begin.data.data());
+            const auto* size_values = reinterpret_cast<const int*>(size.data.data());
+            bool reverse = false;
+            for (size_t axis = 0; axis < data.dims.size(); ++axis) {
+              const int begin_value = begin_values[axis];
+              const int size_value = size_values[axis];
+              const int dim = data.dims[axis];
+              if (begin_value >= 0 && size_value >= 0 &&
+                  begin_value + size_value > dim && begin_value > 0) {
+                reverse = true;
+              }
+            }
+            if (reverse) {
+              if (error) {
+                *error = "reverse Slice requires a negative stride, but the current "
+                         "Core/ADLA backend cannot compile it safely: " +
+                         output.name;
+              }
+              return false;
+            }
+          }
+        }
+      }
+
       AML_Node node{};
       std::string emitted_op_name = op_name;
       node.Node_type = static_cast<int>(op->second);

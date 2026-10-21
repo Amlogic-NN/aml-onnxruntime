@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "context_binary_info.h"
+#include "bridge_ir.h"
 
 namespace amlogic::adla_bridge {
 

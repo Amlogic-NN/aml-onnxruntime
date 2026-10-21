@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+// Registers the Amlogic EP backed by AMLNN/NNSDK. Android builds also perform
+// ONNX-to-ADLA conversion during Session initialization.
 ORT_API_STATUS(OrtSessionOptionsAppendExecutionProvider_Amlogic, _In_ OrtSessionOptions* options);
 
 #ifdef __cplusplus

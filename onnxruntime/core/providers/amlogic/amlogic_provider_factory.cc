@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "core/providers/amlogic/amlogic_provider_factory.h"
+#include "core/common/common.h"
 
 #include "core/providers/amlogic/amlogic_execution_provider.h"
 #include "core/providers/amlogic/amlogic_provider_factory_creator.h"
@@ -12,23 +13,17 @@ namespace onnxruntime {
 namespace {
 
 struct AmlogicProviderFactory : IExecutionProviderFactory {
-  explicit AmlogicProviderFactory(const ProviderOptions& provider_options)
-      : info_(AmlogicExecutionProviderInfo::FromProviderOptions(provider_options)) {
-  }
-
   std::unique_ptr<IExecutionProvider> CreateProvider() override {
-    return std::make_unique<AmlogicExecutionProvider>(info_);
+    return std::make_unique<AmlogicExecutionProvider>();
   }
-
- private:
-  AmlogicExecutionProviderInfo info_;
 };
 
 }  // namespace
 
 std::shared_ptr<IExecutionProviderFactory> AmlogicProviderFactoryCreator::Create(
     const ProviderOptions& provider_options) {
-  return std::make_shared<AmlogicProviderFactory>(provider_options);
+  ORT_ENFORCE(provider_options.empty(), "The unified Amlogic EP does not accept provider options");
+  return std::make_shared<AmlogicProviderFactory>();
 }
 
 }  // namespace onnxruntime

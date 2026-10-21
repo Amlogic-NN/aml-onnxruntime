@@ -7,9 +7,14 @@ if [[ $# -lt 2 ]]; then
 fi
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
-PACKAGE_DIR="${PACKAGE_DIR:-${REPO_ROOT}/tools/amlogic_amlnn_pipeline/pipeline_demo/bin/android64}"
-ORT_BUILD="${ORT_BUILD:-${REPO_ROOT}/build/AMLOGIC_AMLNN_PIPELINE-android64/Release}"
-REMOTE_DIR="${REMOTE_DIR:-/data/local/tmp/amlogic_amlnn_pipeline_test}"
+RELEASE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PACKAGE_DIR="${PACKAGE_DIR:-${RELEASE_DIR}/pipeline_demo/bin/android64}"
+ORT_BUILD="${ORT_BUILD:-${REPO_ROOT}/build/AMLOGIC_PIPELINE-android64/Release}"
+REMOTE_DIR="${REMOTE_DIR:-/data/local/tmp/amlogic_release_test}"
+SDK_ROOT="${AMLOGIC_SDK_ROOT:-${REPO_ROOT}/third_party/amlogic}"
+CORE_SO="${AMLOGIC_CORE_SO:-${SDK_ROOT}/aml_compiler_core_v1.0.1_20261015/libs/android/arm64-v8a/libaml_compiler_core.so}"
+COMPILER_SO="${AMLOGIC_COMPILER_SO:-${SDK_ROOT}/compiler_adla_v3.5.0/libs/android/arm64-v8a/libcompiler_adla.so}"
+NNSDK_SO="${AMLNN_NNSDK_SO:-${SDK_ROOT}/sdk_v1.1.0_v3.0.3_20260910_merged/android/lib64/libnnsdk.so}"
 
 ONNX_MODEL="$1"
 LOCAL_OUTPUT_DIR="$2"
@@ -46,14 +51,13 @@ ORT_SO="${ORT_BUILD}/libonnxruntime.so"
 [[ -f "${ORT_SO}" ]] || ORT_SO="${PACKAGE_DIR}/libonnxruntime.so"
 
 command -v adb >/dev/null || { echo "adb not found" >&2; exit 1; }
-for file in "${RUNNER}" "${ORT_SO}" "${ONNX_MODEL}"; do
+for file in "${RUNNER}" "${ORT_SO}" "${CORE_SO}" "${COMPILER_SO}" "${NNSDK_SO}" "${ONNX_MODEL}"; do
   [[ -f "${file}" ]] || { echo "File not found: ${file}" >&2; exit 1; }
 done
 
-# Check the full set of shipped ELF files. The bridge may use shared libc++
-# even when the ORT library and the test executable do not.
+# Core/compiler may need shared libc++ even when ORT and the runner do not.
 NEED_LIBCXX=0
-for file in "${RUNNER}" "${ORT_SO}"; do
+for file in "${RUNNER}" "${ORT_SO}" "${CORE_SO}" "${COMPILER_SO}" "${NNSDK_SO}"; do
   if readelf -d "${file}" | grep -q 'Shared library: \[libc++_shared\.so\]'; then
     NEED_LIBCXX=1
     break
@@ -67,10 +71,18 @@ fi
 
 mkdir -p "${LOCAL_OUTPUT_DIR}"
 adb get-state >/dev/null
+ORIGINAL_TFLITE_DUMP="$(adb shell getprop vendor.TFLITE_FILE_DUMP_LEVEL | tr -d '\r')"
+restore_tflite_dump() {
+  adb shell "setprop vendor.TFLITE_FILE_DUMP_LEVEL '${ORIGINAL_TFLITE_DUMP}'" >/dev/null 2>&1 || true
+}
+trap restore_tflite_dump EXIT
 adb shell "rm -rf '${REMOTE_DIR}' && mkdir -p '${REMOTE_DIR}/output'"
 
 adb push "${RUNNER}" "${REMOTE_DIR}/pipeline_demo" >/dev/null
 adb push "${ORT_SO}" "${REMOTE_DIR}/libonnxruntime.so" >/dev/null
+adb push "${CORE_SO}" "${REMOTE_DIR}/libaml_compiler_core.so" >/dev/null
+adb push "${COMPILER_SO}" "${REMOTE_DIR}/libcompiler_adla.so" >/dev/null
+adb push "${NNSDK_SO}" "${REMOTE_DIR}/libnnsdk.so" >/dev/null
 if [[ ${NEED_LIBCXX} -eq 1 ]]; then
   adb push "${LIBCXX_SO}" "${REMOTE_DIR}/libc++_shared.so" >/dev/null
 fi
@@ -89,7 +101,7 @@ done
 adb shell "chmod 755 '${REMOTE_DIR}/pipeline_demo'"
 adb shell "setprop vendor.TFLITE_FILE_DUMP_LEVEL '${DUMP_TFLITE}'"
 echo "Running single Session Android64 flow"
-adb shell "cd '${REMOTE_DIR}' && export LD_LIBRARY_PATH='${REMOTE_DIR}' && ./pipeline_demo '$(basename -- "${ONNX_MODEL}")' output '${LOG_LEVEL}'${REMOTE_INPUTS}" \
+adb shell "cd '${REMOTE_DIR}' && export LD_LIBRARY_PATH='${REMOTE_DIR}:/vendor/lib64' && ./pipeline_demo '$(basename -- "${ONNX_MODEL}")' output '${LOG_LEVEL}'${REMOTE_INPUTS}" \
   2>&1 | tee "${LOCAL_OUTPUT_DIR}/run.log"
 
 remote_outputs="$(adb shell "cd '${REMOTE_DIR}/output' && for file in output_*.bin output_*.meta; do if [ -f \"\$file\" ]; then echo \"\$file\"; fi; done" | tr -d '\r')"

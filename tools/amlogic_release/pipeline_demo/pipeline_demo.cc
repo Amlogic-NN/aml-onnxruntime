@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "onnxruntime_cxx_api.h"
-#include "core/providers/amlnn/amlnn_provider_factory.h"
+#include "core/providers/amlogic/amlogic_provider_factory.h"
 
 namespace {
 
@@ -229,17 +229,17 @@ int main(int argc, char** argv) {
       throw std::runtime_error("failed to set ORT_AMLNN_LOG_LEVEL");
     }
 
-    std::cout << "AMLOGIC AMLNN PIPELINE test configuration\n"
+    std::cout << "Amlogic pipeline test configuration\n"
               << "  ONNX model: " << argv[1] << "\n"
               << "  Output directory: " << argv[output_arg] << "\n"
               << "  AMLNN log level: " << log_level << "\n";
-    Ort::Env env(ORT_LOGGING_LEVEL_VERBOSE, "amlogic_amlnn_pipeline_test");
+    Ort::Env env(ORT_LOGGING_LEVEL_VERBOSE, "amlogic_pipeline_test");
     Ort::SessionOptions options;
     options.SetLogSeverityLevel(0);
     options.SetIntraOpNumThreads(1);
     options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
     options.AddConfigEntry("session.disable_cpu_ep_fallback", "1");
-    CheckStatus(OrtSessionOptionsAppendExecutionProvider_Amlnn(options));
+    CheckStatus(OrtSessionOptionsAppendExecutionProvider_Amlogic(options));
 
     std::cout << "Creating session\n";
     Ort::Session session(env, argv[1], options);
