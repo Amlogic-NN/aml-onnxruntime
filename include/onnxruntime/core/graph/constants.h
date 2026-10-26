@@ -41,6 +41,7 @@ constexpr const char* kNvTensorRTRTXExecutionProvider = "NvTensorRTRTXExecutionP
 constexpr const char* kNnapiExecutionProvider = "NnapiExecutionProvider";
 constexpr const char* kQnnExecutionProvider = "QNNExecutionProvider";
 constexpr const char* kRknpuExecutionProvider = "RknpuExecutionProvider";
+constexpr const char* kAmlnnExecutionProvider = "AmlnnExecutionProvider";
 constexpr const char* kDmlExecutionProvider = "DmlExecutionProvider";
 constexpr const char* kMIGraphXExecutionProvider = "MIGraphXExecutionProvider";
 constexpr const char* kAclExecutionProvider = "ACLExecutionProvider";

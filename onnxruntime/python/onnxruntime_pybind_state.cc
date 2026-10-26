@@ -1428,6 +1428,12 @@ static std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory
 #ifdef USE_VSINPU
     return onnxruntime::VSINPUProviderFactoryCreator::Create();
 #endif
+  } else if (type == kAmlnnExecutionProvider) {
+#ifdef USE_AMLNN
+    const auto it = provider_options_map.find(type);
+    return onnxruntime::AmlnnProviderFactoryCreator::Create(
+        it == provider_options_map.end() ? ProviderOptions{} : it->second);
+#endif
   } else if (type == kRknpuExecutionProvider) {
 #ifdef USE_RKNPU
     return onnxruntime::RknpuProviderFactoryCreator::Create();

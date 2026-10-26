@@ -103,6 +103,7 @@ ORT_API_STATUS_IMPL(OrtApis::SessionOptionsAppendExecutionProvider,
     CoreML,
     NvTensorRtRtx,  // TensorRt EP for RTX GPUs.
     MIGraphX,
+    Amlnn,
     CPU
   };
 
@@ -112,7 +113,7 @@ ORT_API_STATUS_IMPL(OrtApis::SessionOptionsAppendExecutionProvider,
     const char* canonical_name = nullptr;
   };
 
-  static std::array<EpToAppend, 14> supported_eps = {
+  static std::array<EpToAppend, 15> supported_eps = {
       EpToAppend{EpID::DML, "DML", kDmlExecutionProvider},
       EpToAppend{EpID::QNN, "QNN", kQnnExecutionProvider},
       EpToAppend{EpID::OpenVINO, "OpenVINO", kOpenVINOExecutionProvider},
@@ -126,6 +127,7 @@ ORT_API_STATUS_IMPL(OrtApis::SessionOptionsAppendExecutionProvider,
       EpToAppend{EpID::CoreML, "CoreML", kCoreMLExecutionProvider},
       EpToAppend{EpID::NvTensorRtRtx, "NvTensorRtRtx", kNvTensorRTRTXExecutionProvider},
       EpToAppend{EpID::MIGraphX, "MIGraphX", kMIGraphXExecutionProvider},
+      EpToAppend{EpID::Amlnn, "Amlnn", kAmlnnExecutionProvider},
       EpToAppend{EpID::CPU, "CPU", kCpuExecutionProvider}};
 
   ProviderOptions provider_options;
@@ -290,6 +292,14 @@ ORT_API_STATUS_IMPL(OrtApis::SessionOptionsAppendExecutionProvider,
         provider_options["preferred_layout"] = preferred_layout;
       }
       options->provider_factories.push_back(JsProviderFactoryCreator::Create(provider_options, &(options->value)));
+#else
+      status = create_not_supported_status();
+#endif
+      break;
+    }
+    case EpID::Amlnn: {
+#if defined(USE_AMLNN)
+      options->provider_factories.push_back(AmlnnProviderFactoryCreator::Create(provider_options));
 #else
       status = create_not_supported_status();
 #endif

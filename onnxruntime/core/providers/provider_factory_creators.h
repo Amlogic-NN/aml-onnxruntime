@@ -58,6 +58,10 @@
 #include "core/providers/rknpu/rknpu_provider_factory_creator.h"
 #endif
 
+#if defined(USE_AMLNN)
+#include "core/providers/amlnn/amlnn_provider_factory_creator.h"
+#endif
+
 #if defined(USE_QNN) || defined(USE_QNN_PROVIDER_INTERFACE)
 #include "core/providers/qnn/qnn_provider_factory_creator.h"
 #endif

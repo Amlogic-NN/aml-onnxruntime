@@ -73,6 +73,10 @@ __pycache__/
 # C extensions
 *.so
 
+# AMLNN release tools are distributed through the internal tool repository.
+/tools/amlnn_release/
+/logs/amlnn_release/
+
 # Distribution / packaging
 .Python
 build/

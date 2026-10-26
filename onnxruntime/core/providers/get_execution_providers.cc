@@ -133,6 +133,14 @@ constexpr ProviderInfo kProvidersInPriorityOrder[] =
 #endif
         },
         {
+            kAmlnnExecutionProvider,
+#ifdef USE_AMLNN
+            true,
+#else
+            false,
+#endif
+        },
+        {
             kRknpuExecutionProvider,
 #ifdef USE_RKNPU
             true,
